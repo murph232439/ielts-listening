@@ -262,6 +262,7 @@ var P3_CLASSIFICATIONS=[
  {id:"time",label:"按时间分类：过去 / 现在 / 未来、短期 / 长期",skeleton:"In the past, ... Nowadays, ... In the long run, ...",words:["in the past","nowadays","in the long run","over time"]},
  {id:"cause",label:"按原因和结果分类：个人原因 / 社会原因、原因 / 后果",skeleton:"There are personal reasons, ... There are also social reasons, ...",words:["personal reasons","social reasons","as a result","one consequence is"]},
  {id:"balance",label:"按利弊分类：好处 / 坏处、支持 / 反对",skeleton:"On the positive side, ... On the negative side, ... On balance, ...",words:["on the positive side","on the negative side","on balance","however"]},
+ {id:"company",label:"按公司规模/类型分类：大公司 / 小公司 / 新公司 / 成熟企业",skeleton:"Large companies can ... Smaller companies can ...",words:["large companies","smaller businesses","have more resources","be more flexible"]},
  {id:"responsibility",label:"按责任主体分类：个人 / 家庭 / 学校 / 政府",skeleton:"Individuals can ... Schools can ... Governments can ...",words:["individuals","families","schools","governments"]},
  {id:"method",label:"按方式分类：线上 / 线下、自己学 / 跟老师学、家里 / 公共场所",skeleton:"One way is ... Another way is ...",words:["one way is","another way is","learning by oneself","with a teacher"]},
  {id:"type",label:"按类型分类：类型 A / 类型 B / 类型 C",skeleton:"They can be divided into ... The main difference is ...",words:["fall into different groups","one type is","another type is","the main difference is"]}
@@ -272,6 +273,7 @@ var P3_IDEA_LENSES={
  time:["过去：以前的条件和做法是什么？","现在：现在发生了什么变化？","未来：这个趋势会继续还是反转？","影响：变化对谁最有利或最不利？"],
  cause:["个人：性格、习惯或需求造成什么影响？","社会：家庭、学校、媒体或文化有什么作用？","环境：经济、科技或生活条件怎样影响？","结果：这些原因最后造成什么后果？"],
  balance:["好处：谁会受益，为什么？","坏处：谁会承担代价，为什么？","时间：短期和长期效果有什么不同？","结论：总体更利大于弊，还是弊大于利？"],
+ company:["规模：大公司和小公司谁有更多资源？","成本：谁能承担技术、培训或环保投入？","影响：谁对行业、员工或消费者影响更大？","灵活性：谁调整得更快，谁受到更多限制？"],
  responsibility:["个人：自己能做什么？","家庭：父母或家人能做什么？","学校：学校或老师能做什么？","政府：政策和公共服务能做什么？"],
  method:["时间：这种方法需要多少时间？","效果：哪种方法反馈更快、效果更稳？","自主：自己学和别人教有什么不同？","结果：哪种方法更适合长期坚持？"],
  type:["特征：每种类型最明显的特征是什么？","例子：生活中分别有哪些例子？","差异：它们最重要的区别是什么？","影响：不同选择会带来什么结果？"]
@@ -293,6 +295,7 @@ function p3StructureFor(q){var s=p3Text(q);
 function p3ClassificationFor(q,structureId){var s=p3Text(q);
  if(/(future|past|now|change|changed|years|long term|short term|early age|young age|before learning|after learning)/.test(s))return "time";
  if(structureId==="cause")return "cause";
+ if(/(company|companies|business|businesses|firm|firms|employer|organization|organisations?|corporation)/.test(s))return "company";
  if(structureId==="solution"||/(taken care of|government|schools|parents should|responsible|responsibility|individuals)/.test(s))return "responsibility";
  if(structureId==="future")return "time";
  if(structureId==="comparison"){
