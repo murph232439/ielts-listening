@@ -271,6 +271,7 @@ var P3_STRUCTURES=[
 ];
 var P3_CLASSIFICATIONS=[
  {id:"context",label:"按居住环境/人群对比分类：自然地区居民 / 城市居民",skeleton:"People who live close to nature ... People in cities ...",words:["people who live close to nature","urban residents","more likely to...","daily contact with nature","environmental awareness"]},
+ {id:"stage",label:"按年龄阶段分类：幼童 / 学龄儿童 / 青少年 / 成年人",skeleton:"For younger children, ... For older students, ...",words:["at an early age","young learners","primary-school children","teenagers","when they are older","as they grow up"]},
  {id:"group",label:"按人群分类：年轻人 / 老年人 / 学生 / 上班族",skeleton:"For younger people, ... However, for older people, ...",words:["younger/older people","whereas","tend to","health-conscious"]},
  {id:"scene",label:"按场景或方式分类：城市 / 乡村、线上 / 线下、家 / 公共场所",skeleton:"In cities, ... In the countryside, ...",words:["in cities","in the countryside","online","in public places"]},
  {id:"time",label:"按时间分类：过去 / 现在 / 未来、短期 / 长期",skeleton:"In the past, ... Nowadays, ... In the long run, ...",words:["in the past","nowadays","in the long run","over time"]},
@@ -284,6 +285,7 @@ var P3_CLASSIFICATIONS=[
 ];
 var P3_IDEA_LENSES={
  context:["人群：谁住在自然环境中，谁住在城市？","关系：他们与自然的日常接触有什么不同？","利益：谁更直接依赖当地资源？","态度：谁更可能有保护意愿，为什么？"],
+ stage:["年龄：不同年龄阶段有什么能力或需求？","学习：哪个阶段更容易建立兴趣或习惯？","长期影响：早期学习对以后有什么作用？","条件：什么时候开始最合适，为什么？"],
  group:["需求：他们最在意什么？","条件：谁有更多时间、金钱、经验或资源？","习惯：两组长久以来的做法有什么不同？","压力：谁受到同伴、家庭或社会期待影响更大？"],
  scene:["条件：哪种场景更方便、更便宜或更安全？","习惯：人们在两种场景中的做法有什么不同？","关系：哪种场景更容易产生交流或冲突？","结果：长期来看，哪种场景更有利？"],
  time:["过去：以前的条件和做法是什么？","现在：现在发生了什么变化？","未来：这个趋势会继续还是反转？","影响：变化对谁最有利或最不利？"],
@@ -342,6 +344,7 @@ function p3GrammarFor(q){return P3_GRAMMAR[String(q||"").replace(/\s+/g," ").tri
 function p3QuestionHtml(){return '<div class="p3QuestionCard"><span>当前题目</span>'+esc(PCUR.t)+'</div>'}
 function p3GrammarText(q){var g=p3GrammarFor(q)||{};return [].concat(g.subjects||[],g.objects||[],g.verbs||[],g.adjectives||[],g.adverbs||[],g.prepositions||[]).join(' ').toLowerCase()}
 function p3ClassificationAdviceHtml(q){var id=p3ClassificationFor(q,p3StructureFor(q)),g=p3GrammarFor(q)||{},subject=(g.subjects||[])[0]||'',object=(g.objects||[])[0]||'';var text={
+ stage:'题目比较的是不同年龄阶段，而不是普通的时间变化，先按幼童、学龄儿童、青少年和成年人分类。',
  context:'题目比较的是住在自然环境中的人和城市居民，并用 more likely 比较保护意愿，先按居住环境或人群对比分类。',
  geography:'题目问的是自然景点的类型，核心对象是自然景点，先按地理特征分类。',
  company:'题目讨论公司，先按公司规模或类型分类，再看不同公司能做什么。',
@@ -372,6 +375,7 @@ function p3StructureFor(q){var s=p3Text(q);
 function p3ClassificationFor(q,structureId){var s=p3Text(q);
  if(structureId==="balance")return "balance";
  if(/people.*live.*natural|natural place/.test(p3GrammarText(q))&&/more|likely/.test(p3GrammarText(q)))return "context";
+ if(/(early age|young age|at a young age|when they are older|children should begin|begin learning.*early|as they grow up)/.test(s))return "stage";
  if(/(future|past|now|change|changed|years|long term|short term|early age|young age|before learning|after learning)/.test(s))return "time";
  if(structureId==="cause")return "cause";
  if(/(company|companies|business|businesses|firm|firms|employer|organization|organisations?|corporation)/.test(s))return "company";
@@ -542,11 +546,4 @@ document.getElementById('list').onclick=function(e){
   }
 };
 renderBrowse();
-</script>
-<footer style="max-width:900px;margin:28px auto 18px;padding:14px 18px 0;border-top:1px solid #d8e0e4;color:#6b737b;font-size:12px;line-height:1.75;text-align:center">
-  <div><strong>内容维护：</strong>吴曦</div>
-  <div><strong>问题反馈：</strong><a href="mailto:wuxi2@xdf.cn" style="color:#3d6274">wuxi2@xdf.cn</a></div>
-  <div>一般反馈将在工作日内查看。个别班型定制和新功能开发需单独评估。</div>
-  <div>最近更新：2026-10-05</div>
-</footer>
-</body></html>
+</script></body></html>
