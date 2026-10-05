@@ -95,7 +95,7 @@ footer{text-align:center;color:#b6bcc7;font-size:12px;padding:20px 0 30px}
 .p3IdeaEx{margin-top:7px;padding:8px 9px;border-radius:8px;background:#fff8e6;color:#7a5615;font-size:13px;line-height:1.6}
 .p3ExampleHint{font-size:13px;color:#7a5615;margin-top:5px}.p3Ex{margin-top:6px;border:1px solid #dfe4ec;border-radius:8px;background:#fff}
 .p3Ex summary{cursor:pointer;padding:8px 10px;font-weight:700}.p3ExBody{padding:0 10px 9px;color:#465069;line-height:1.7}
-.p3English{margin-top:7px;color:#2456a6}
+.p3English{margin-top:7px;color:#2456a6}.p3Move{margin-top:4px}.p3Move i{display:inline-block;min-width:62px;color:#7a5615;font-style:normal;font-weight:700}
 .p3AngleExample{margin-top:7px;padding:7px 8px;border-radius:8px;background:#fff8e6;color:#7a5615;font-size:13px}
 .p3Ref{display:none;margin-top:11px;padding-top:10px;border-top:1px dashed #dfe4ec}
 @media(max-width:430px){.p3Record{grid-template-columns:1fr}.p3ScoreRow{align-items:flex-start;flex-direction:column}.p3ScoreBtns{width:100%}.p3ScoreBtn{flex:1}}
@@ -310,14 +310,14 @@ var P3_ANGLE_BANK=[
  {id:"environment",label:"Environment 环境",prompt:"它对自然环境、公共空间或资源使用有什么影响？",vocab:["reduce waste","save energy","protect natural resources","recycle materials","keep public spaces clean","reduce pollution"],school:["回收垃圾","节约用纸","保持校园清洁"]},
 ];
 var P3_ENGLISH_THINKING={
- communication:["谁和谁交流？","交流之后关系或理解发生了什么变化？","这个变化为什么重要？"],
- culture:["这体现了什么习惯、身份或价值？","它怎样影响人的行为？","它能一直保留，还是随着环境变化？"],
- health:["谁的身体或心理受到影响？","具体会发生什么变化？","这是短期影响还是长期影响？"],
- education:["谁在学习什么？","它改变了什么能力或行为？","这个改变对之后的生活有什么作用？"],
- economy:["谁花钱、省钱或获得利益？","成本和收益分别是什么？","长期来看是否值得？"],
- relax:["它怎样让人放松或恢复精力？","压力或情绪发生了什么变化？","什么时候效果最好？"],
- sentimental:["谁会产生什么感受？","这种感受怎样影响人与人的关系？","有没有另一方的感受需要补充？"],
- environment:["哪一个资源或空间受到影响？","具体行为造成了什么结果？","长期看会带来什么风险或好处？"]
+ communication:{claim:"I think ... matters because it affects how people communicate.",reason:"When people share information or listen to different views, ...",result:"As a result, relationships or decisions can ...",nuance:"That said, not everyone communicates in the same way."},
+ culture:{claim:"It helps people understand their identity, values or traditions.",reason:"Shared stories and customs connect people to a community.",result:"As a result, people may feel a stronger sense of belonging.",nuance:"That said, traditions can change as society changes."},
+ health:{claim:"It affects both physical and mental health.",reason:"For example, it can change sleep, stress or daily habits.",result:"As a result, people may feel better or worse in the long term.",nuance:"However, the effect depends on how often or how long it happens."},
+ education:{claim:"It helps learners build curiosity, skills or knowledge.",reason:"This is mainly because content becomes easier to understand when it matches their age or experience.",result:"As a result, they are more likely to stay interested and keep learning.",nuance:"That said, the method and difficulty should change as they grow older."},
+ economy:{claim:"It can affect how much people spend, save or earn.",reason:"This is mainly because ... changes costs, choices or opportunities.",result:"As a result, ... may become more or less affordable.",nuance:"However, the value depends on the person's budget and needs."},
+ relax:{claim:"It gives people a way to relax, enjoy themselves or recharge.",reason:"When people take a break or do something fun, their stress can decrease.",result:"As a result, they may feel more energetic and focused.",nuance:"That said, the best way to relax depends on the person."},
+ sentimental:{claim:"It affects how people feel about themselves and their relationships.",reason:"This is because it can create trust, comfort or a sense of belonging.",result:"As a result, people may feel closer to others or more confident.",nuance:"However, feelings can differ from person to person."},
+ environment:{claim:"It has both immediate and long-term effects on the environment.",reason:"This is mainly because ... changes how resources are used or how much waste is produced.",result:"As a result, it can improve or damage air, water and natural habitats.",nuance:"However, the impact depends on how widely the behaviour is adopted."}
 };
 var P3_ANGLE_RULES={
  communication:/friend|family|relationship|social|communicat|talk|teamwork|team project|work in a team|teacher|student|parent|company|business|online|phone|message|popular/g,
@@ -363,7 +363,8 @@ function p3ClassificationAdviceHtml(q){var id=p3ClassificationFor(q,p3StructureF
 function p3IdeaHtml(id,q){var items=P3_IDEA_LENSES[id]||P3_IDEA_LENSES.type,html='<div class="p3IdeaList">'+items.map(function(x){return '<span class="p3Idea">'+esc(x)+'</span>'}).join('')+'</div>';if(id==='group'&&/young|old/.test(p3Text(q)))html+='<div class="p3IdeaEx">年龄差示例：young people 可以想 energy、fitness trends、appearance、peer influence；older people 可以想 age-related risks、regular check-ups、long-term health。</div>';return html}
 function p3AngleFits(q){var s=p3Text(q);return P3_ANGLE_BANK.map(function(x){var hits=s.match(P3_ANGLE_RULES[x.id])||[];return {x:x,score:hits.length,status:'推荐角度'}}).filter(function(x){return x.score>0}).sort(function(a,b){return b.score-a.score}).slice(0,4)}
 function p3AngleVocab(x,q){if(x.id!=='environment')return x.vocab;var bank=P3_ENV_BANKS.find(function(item){return item.pattern.test(p3Text(q))})||P3_ENV_BANKS[P3_ENV_BANKS.length-1];return bank.vocab}
-function p3AnglesHtml(q){var showSchool=/school|rule|uniform|classroom|student|teacher|homework/.test(p3Text(q)),fits=p3AngleFits(q);return '<div class="p3ExampleHint">只显示与本题相关的角度。先选一个，再想具体例子和词汇。</div>'+fits.map(function(fit,i){var x=fit.x,vocab=p3AngleVocab(x,q);return '<details class="p3Ex"'+(P3MODE==='guided'&&i===0?' open':'')+'><summary>'+esc(x.label)+' · '+fit.status+'</summary><div class="p3ExBody"><b>思考</b> '+esc(x.prompt)+'<div class="p3Words">'+vocab.map(function(w){return '<span class="p3Word">'+esc(w)+'</span>'}).join('')+'</div>'+'<div class="p3English"><b>英式思维</b> '+P3_ENGLISH_THINKING[x.id].map(esc).join(' / ')+'</div>'+(showSchool?'<div class="p3AngleExample">学校题可举例：'+x.school.map(esc).join(' / ')+'</div>':'')+'</div></details>'}).join('')}
+function p3EnglishHtml(id){var t=P3_ENGLISH_THINKING[id];return '<div class="p3English"><b>英式思维</b><div class="p3Move"><i>Claim</i>'+esc(t.claim)+'</div><div class="p3Move"><i>Reason</i>'+esc(t.reason)+'</div><div class="p3Move"><i>Result</i>'+esc(t.result)+'</div><div class="p3Move"><i>Nuance</i>'+esc(t.nuance)+'</div></div>'}
+function p3AnglesHtml(q){var showSchool=/school|rule|uniform|classroom|student|teacher|homework/.test(p3Text(q)),fits=p3AngleFits(q);return '<div class="p3ExampleHint">只显示与本题相关的角度。先选一个，再想具体例子和词汇。</div>'+fits.map(function(fit,i){var x=fit.x,vocab=p3AngleVocab(x,q);return '<details class="p3Ex"'+(P3MODE==='guided'&&i===0?' open':'')+'><summary>'+esc(x.label)+' · '+fit.status+'</summary><div class="p3ExBody"><b>思考</b> '+esc(x.prompt)+'<div class="p3Words">'+vocab.map(function(w){return '<span class="p3Word">'+esc(w)+'</span>'}).join('')+'</div>'+p3EnglishHtml(x.id)+(showSchool?'<div class="p3AngleExample">学校题可举例：'+x.school.map(esc).join(' / ')+'</div>':'')+'</div></details>'}).join('')}
 function p3StructureFor(q){var s=p3Text(q);
  if(/^(how can|what can .* \bdo\b|what should .* \bdo\b|how .* (solve|deal with|reduce|protect|improve))/.test(s))return "solution";
  if(/^(why|what effect|what impact|how does)/.test(s)||/(reason|effect|impact|influence|result|lead to|because|due to)/.test(s))return "cause";
