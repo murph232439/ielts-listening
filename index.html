@@ -117,7 +117,7 @@ footer{text-align:center;color:#b6bcc7;font-size:12px;padding:20px 0 30px}
 </div>
 <div class="count" id="cnt"></div>
 </div>
-<div id="practiceBar" style="display:none">
+<div id="practiceBar" style="display:none"><input class="search" id="pq" placeholder="搜索练习题，例如 rules / environment / social media" autocomplete="off">
 <div class="tabs" id="ptabs">
 <button class="on" data-p="p1">Part 1</button>
 <button data-p="p3">Part 3</button>
@@ -174,25 +174,28 @@ function renderBrowse(){
   document.getElementById('cnt').textContent='共 '+shown+' 个条目';
 }
 /* 练习 */
-var PTAB='p1',PLANG='en',PG=null,PITEM=[],PIDX=0,PSCORE=0,PCUR=null,POPTS=[],PLOCK=false;
+var PTAB='p1',PLANG='en',PKW='',PGS=[],PG=null,PITEM=[],PIDX=0,PSCORE=0,PCUR=null,POPTS=[],PLOCK=false;
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function practiceGroups(){return G.filter(function(g){return g.part===PTAB&&(g.lines||[]).length>1})}
+function practiceLineMatch(l){var k=PKW.toLowerCase();return (l.t||'').toLowerCase().indexOf(k)>=0||(l.zh||'').toLowerCase().indexOf(k)>=0}
+function practiceGroupMatch(g){return ((g.title||'')+' '+(g.cat||'')+' '+(g.lines||[]).map(function(l){return (l.t||'')+' '+(l.zh||'')}).join(' ')).toLowerCase().indexOf(PKW.toLowerCase())>=0}
+function visiblePracticeGroups(){return PKW.trim()?practiceGroups().filter(practiceGroupMatch):practiceGroups()}
 function label(l){return PLANG==='zh'?(l.zh||l.t):l.t}
 function renderPracticeList(){
-  var gs=practiceGroups(),out='',lastcat='';
+  PGS=visiblePracticeGroups();var gs=PGS,out='',lastcat='';
   gs.forEach(function(g,i){
     if(g.cat!==lastcat){lastcat=g.cat;out+='<div class="cat">'+esc(g.cat)+'</div>'}
     var badge=(g.tags&&g.tags.length)?'<span class="badge">'+esc(g.tags.join('/'))+'</span>':'';
     out+='<div class="card gcard" data-i="'+i+'"><div><div class="ptitle">'+esc(g.title)+badge+'</div><div class="gmeta">'+g.lines.length+' 个问题 · 点开练这一组</div></div><div class="go">开始 →</div></div>';
   });
   document.getElementById('list').innerHTML=out||'<div class="empty">没有可练习的内容</div>';
-  document.getElementById('pcnt').textContent=gs.length+' 个话题 · '+(PLANG==='zh'?'选中文意思':'选英文题目');
+  var matchCount=gs.reduce(function(n,g){return n+(g.lines||[]).filter(practiceLineMatch).length},0);document.getElementById('pcnt').textContent=gs.length+' 个话题 · '+(PKW.trim()?'匹配 '+matchCount+' 道题':'全部题目')+' · '+(PLANG==='zh'?'选中文意思':'选英文题目');
   PG=null;
 }
 function startGroup(gi){
-  PG=practiceGroups()[gi];
-  PITEM=shuffle(PG.lines.filter(function(l){return l.a}));
-  if(PITEM.length<2)PITEM=shuffle(PG.lines);
+  PG=PGS[gi]||practiceGroups()[gi];
+  var pool=PG.lines.filter(function(l){return l.a});var matched=PKW.trim()?pool.filter(practiceLineMatch):[];PITEM=shuffle(matched.length?matched:pool);
+  if(PITEM.length<2)PITEM=shuffle(matched.length?matched:PG.lines);
   PIDX=0;PSCORE=0;renderQ();
 }
 function renderQ(){
@@ -505,6 +508,7 @@ document.getElementById('mode').onclick=function(e){
   if(MODE==='browse')renderBrowse();else renderPracticeList();
 };
 document.getElementById('q').oninput=function(){KW=this.value.trim();renderBrowse()};
+document.getElementById('pq').oninput=function(){PKW=this.value.trim();if(MODE==='practice')renderPracticeList()};
 document.getElementById('tabs').onclick=function(e){
   if(e.target.tagName!=='BUTTON')return;PART=e.target.dataset.p;
   document.getElementById('tabs').querySelectorAll('button').forEach(function(b){b.className=(b.dataset.p===PART?'on':'')});renderBrowse();
