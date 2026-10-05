@@ -85,10 +85,8 @@ footer{text-align:center;color:#b6bcc7;font-size:12px;padding:20px 0 30px}
 .p3ModeBtn.on{background:#2456a6;border-color:#2456a6;color:#fff;font-weight:700}
 .p3QuestionCard{margin:8px 0;padding:10px 12px;border-radius:9px;background:#eef3fb;color:#2456a6;line-height:1.5}
 .p3QuestionCard span{display:block;font-size:12px;color:#6f7d92;margin-bottom:2px}
-.p3Grammar{margin:8px 0;border:1px solid #dfe4ec;border-radius:9px;background:#fff}
-.p3Grammar summary{cursor:pointer;padding:9px 11px;font-weight:700;color:#2456a6}
-.p3GrammarBody{display:grid;gap:7px;padding:0 11px 11px;color:#465069;line-height:1.6}
-.p3GrammarBody b{display:inline-block;min-width:88px;color:#7a5615}.p3Empty{font-size:12px;color:#a8aeb8}
+.p3Advice{margin:8px 0;padding:9px 11px;border-radius:9px;background:#fff8e6;color:#7a5615;line-height:1.65}
+.p3Advice b{color:#2456a6}
 .p3Select{width:100%;margin-top:4px;padding:8px;border:1px solid #dfe4ec;border-radius:8px;background:#fff;font:inherit}
 .p3ChallengeBox{margin-top:8px;padding:10px 11px;border-radius:9px;background:#fff8e6;color:#7a5615;line-height:1.6}
 .p3Think{margin-top:10px}.p3ThinkRow{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:start;margin-top:7px}
@@ -269,6 +267,7 @@ var P3_STRUCTURES=[
  {id:"category",label:"类型 A → 类型 B → 差异/共同点",skeleton:"They can be divided into ... The main difference is ...",words:["fall into different groups","for one group","for another","the main difference is"]}
 ];
 var P3_CLASSIFICATIONS=[
+ {id:"context",label:"按居住环境/人群对比分类：自然地区居民 / 城市居民",skeleton:"People who live close to nature ... People in cities ...",words:["people who live close to nature","urban residents","more likely to...","daily contact with nature","environmental awareness"]},
  {id:"group",label:"按人群分类：年轻人 / 老年人 / 学生 / 上班族",skeleton:"For younger people, ... However, for older people, ...",words:["younger/older people","whereas","tend to","health-conscious"]},
  {id:"scene",label:"按场景或方式分类：城市 / 乡村、线上 / 线下、家 / 公共场所",skeleton:"In cities, ... In the countryside, ...",words:["in cities","in the countryside","online","in public places"]},
  {id:"time",label:"按时间分类：过去 / 现在 / 未来、短期 / 长期",skeleton:"In the past, ... Nowadays, ... In the long run, ...",words:["in the past","nowadays","in the long run","over time"]},
@@ -281,6 +280,7 @@ var P3_CLASSIFICATIONS=[
  {id:"type",label:"按类型分类：类型 A / 类型 B / 类型 C",skeleton:"They can be divided into ... The main difference is ...",words:["fall into different groups","one type is","another type is","the main difference is"]}
 ];
 var P3_IDEA_LENSES={
+ context:["人群：谁住在自然环境中，谁住在城市？","关系：他们与自然的日常接触有什么不同？","利益：谁更直接依赖当地资源？","态度：谁更可能有保护意愿，为什么？"],
  group:["需求：他们最在意什么？","条件：谁有更多时间、金钱、经验或资源？","习惯：两组长久以来的做法有什么不同？","压力：谁受到同伴、家庭或社会期待影响更大？"],
  scene:["条件：哪种场景更方便、更便宜或更安全？","习惯：人们在两种场景中的做法有什么不同？","关系：哪种场景更容易产生交流或冲突？","结果：长期来看，哪种场景更有利？"],
  time:["过去：以前的条件和做法是什么？","现在：现在发生了什么变化？","未来：这个趋势会继续还是反转？","影响：变化对谁最有利或最不利？"],
@@ -336,9 +336,21 @@ function p3Text(q){return String(q||"").toLowerCase()}
 function p3Find(list,id){for(var i=0;i<list.length;i++){if(list[i].id===id)return list[i]}return list[0]}
 function p3AnswerFor(q){return P3_ANSWERS[String(q||"").replace(/\s+/g," ").trim().toLowerCase()]}
 function p3GrammarFor(q){return P3_GRAMMAR[String(q||"").replace(/\s+/g," ").trim().replace(/[?.!,]+$/g,"").toLowerCase()]}
-function p3GrammarValues(items){return (items||[]).map(function(x){return '<span class="p3Word">'+esc(x)+'</span>'}).join('')||'<span class="p3Empty">未识别</span>'}
-function p3GrammarHtml(){var g=p3GrammarFor(PCUR.t);if(!g)return '';var open=P3MODE==='guided'?' open':'';return '<details class="p3Grammar"'+open+'><summary>语法拆解</summary><div class="p3GrammarBody"><div><b>主语</b>'+p3GrammarValues(g.subjects)+'</div><div><b>谓语 / 任务</b>'+p3GrammarValues(g.verbs)+'</div><div><b>宾语 / 影响对象</b>'+p3GrammarValues(g.objects)+'</div><div><b>形容词</b>'+p3GrammarValues(g.adjectives)+'</div><div><b>副词</b>'+p3GrammarValues(g.adverbs)+'</div><div><b>介词短语</b>'+p3GrammarValues(g.prepositions)+'</div></div></details>'}
 function p3QuestionHtml(){return '<div class="p3QuestionCard"><span>当前题目</span>'+esc(PCUR.t)+'</div>'}
+function p3GrammarText(q){var g=p3GrammarFor(q)||{};return [].concat(g.subjects||[],g.objects||[],g.verbs||[],g.adjectives||[],g.adverbs||[],g.prepositions||[]).join(' ').toLowerCase()}
+function p3ClassificationAdviceHtml(q){var id=p3ClassificationFor(q,p3StructureFor(q)),g=p3GrammarFor(q)||{},subject=(g.subjects||[])[0]||'',object=(g.objects||[])[0]||'';var text={
+ context:'题目比较的是住在自然环境中的人和城市居民，并用 more likely 比较保护意愿，先按居住环境或人群对比分类。',
+ geography:'题目问的是自然景点的类型，核心对象是自然景点，先按地理特征分类。',
+ company:'题目讨论公司，先按公司规模或类型分类，再看不同公司能做什么。',
+ balance:'题目要求判断好坏、必要性或利弊，先分好处、坏处、条件和总体结论。',
+ type:'题目要求说明规则、品质或类型，先按类型分类，再给具体例子。',
+ group:'题目围绕不同人群展开，先按人群分类，再比较他们的做法或处境。',
+ scene:'题目强调地点或场景，先按场景分类，再比较不同环境中的行为。',
+ responsibility:'题目涉及谁应该负责，先按个人、家庭、学校或政府分类。',
+ method:'题目问怎么做或怎么发生变化，先按方式分类，再说明效果。',
+ time:'题目涉及过去、现在或未来，先按时间阶段分类，再比较变化。',
+ cause:'题目问原因或影响，先按个人、社会和环境原因分类，再延伸后果。'
+}[id]||'先根据题目主体、动作和限定范围选择最直接的一层分类，再展开例子。';return '<div class="p3Advice"><b>分类建议</b> '+esc(text)+(subject?'（题目主体：'+esc(subject)+'）':'')+(object?'；关注对象：'+esc(object):'')+'</div>'}
 function p3IdeaHtml(id,q){var items=P3_IDEA_LENSES[id]||P3_IDEA_LENSES.type,html='<div class="p3IdeaList">'+items.map(function(x){return '<span class="p3Idea">'+esc(x)+'</span>'}).join('')+'</div>';if(id==='group'&&/young|old/.test(p3Text(q)))html+='<div class="p3IdeaEx">年龄差示例：young people 可以想 energy、fitness trends、appearance、peer influence；older people 可以想 age-related risks、regular check-ups、long-term health。</div>';return html}
 function p3AngleFits(q){var s=p3Text(q);return P3_ANGLE_BANK.map(function(x){var hits=s.match(P3_ANGLE_RULES[x.id])||[];return {x:x,score:hits.length,status:'推荐角度'}}).filter(function(x){return x.score>0}).sort(function(a,b){return b.score-a.score}).slice(0,4)}
 function p3AngleVocab(x,q){if(x.id!=='environment')return x.vocab;var bank=P3_ENV_BANKS.find(function(item){return item.pattern.test(p3Text(q))})||P3_ENV_BANKS[P3_ENV_BANKS.length-1];return bank.vocab}
@@ -356,6 +368,7 @@ function p3StructureFor(q){var s=p3Text(q);
 }
 function p3ClassificationFor(q,structureId){var s=p3Text(q);
  if(structureId==="balance")return "balance";
+ if(/people.*live.*natural|natural place/.test(p3GrammarText(q))&&/more|likely/.test(p3GrammarText(q)))return "context";
  if(/(future|past|now|change|changed|years|long term|short term|early age|young age|before learning|after learning)/.test(s))return "time";
  if(structureId==="cause")return "cause";
  if(/(company|companies|business|businesses|firm|firms|employer|organization|organisations?|corporation)/.test(s))return "company";
@@ -401,7 +414,7 @@ function p3ScoreHtml(){return '<div class="p3Score"><div class="trainStep" style
 function renderP3Step(){
   var box=document.getElementById('trainBox');if(!box)return;
   P3STATE={structure:p3StructureFor(PCUR.t),classification:""};P3SCORES={structure:0,logic:0,lexis:0,grammar:0,pron:0};
-  box.innerHTML=p3QuestionHtml()+(P3MODE==='challenge'?'':p3GrammarHtml())+p3ModeBar()+'<div id="p3modeBody"></div>';p3RenderModeBody();
+  box.innerHTML=p3QuestionHtml()+p3ModeBar()+'<div id="p3modeBody"></div>';p3RenderModeBody();
 }
 function p3SetMode(mode){P3MODE=mode;p3ResetRecording();renderP3Step()}
 function p3RenderModeBody(){
@@ -409,12 +422,13 @@ function p3RenderModeBody(){
   if(P3MODE==='guided'){
     body.innerHTML='<div class="trainBoxTitle">第二步：先判断回答结构</div><div class="trainFeedback">这道题更适合哪一种回答顺序？</div>'
       +p3OptionsHtml(P3_STRUCTURES,P3STATE.structure,'structure')
-      +'<div id="p3class" style="display:none"><div class="trainStep">第三步：选最直接的分类方式</div>'+p3OptionsHtml(P3_CLASSIFICATIONS,p3ClassificationFor(PCUR.t,P3STATE.structure),'classification')+'</div>'
+      +'<div id="p3class" style="display:none"><div class="trainStep">第三步：选最直接的分类方式</div>'+p3ClassificationAdviceHtml(PCUR.t)+p3OptionsHtml(P3_CLASSIFICATIONS,p3ClassificationFor(PCUR.t,P3STATE.structure),'classification')+'</div>'
       +'<div id="p3toolkit" style="display:none"></div>';return;
   }
   var st=p3Find(P3_STRUCTURES,P3STATE.structure),cl=p3Find(P3_CLASSIFICATIONS,p3ClassificationFor(PCUR.t,P3STATE.structure));
   if(P3MODE==='semi'){
     body.innerHTML='<div class="p3Panel"><div class="trainStep">半自主：先自己选结构和分类</div>'
+      +p3ClassificationAdviceHtml(PCUR.t)
       +'<label class="p3Kit">回答结构<select class="p3Select" id="p3SemiStructure">'+P3_STRUCTURES.map(function(x){return '<option value="'+x.id+'"'+(x.id===st.id?' selected':'')+'>'+esc(x.label)+'</option>'}).join('')+'</select></label>'
       +'<label class="p3Kit">分类方式<select class="p3Select" id="p3SemiClass">'+P3_CLASSIFICATIONS.map(function(x){return '<option value="'+x.id+'"'+(x.id===cl.id?' selected':'')+'>'+esc(x.label)+'</option>'}).join('')+'</select></label>'
       +'<button class="nextbtn" id="p3semiNext">开始组织回答</button></div><div id="p3toolkit" style="display:none"></div>';return;
