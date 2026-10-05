@@ -272,6 +272,7 @@ var P3_CLASSIFICATIONS=[
  {id:"company",label:"按公司规模/类型分类：大公司 / 小公司 / 新公司 / 成熟企业",skeleton:"Large companies can ... Smaller companies can ...",words:["large companies","smaller businesses","have more resources","be more flexible"]},
  {id:"responsibility",label:"按责任主体分类：个人 / 家庭 / 学校 / 政府",skeleton:"Individuals can ... Schools can ... Governments can ...",words:["individuals","families","schools","governments"]},
  {id:"method",label:"按方式分类：线上 / 线下、自己学 / 跟老师学、家里 / 公共场所",skeleton:"One way is ... Another way is ...",words:["one way is","another way is","learning by oneself","with a teacher"]},
+ {id:"geography",label:"按地理特征分类：山地 / 湖泊 / 森林 / 海岸 / 沙漠",skeleton:"For mountainous areas, ... For coastal areas, ...",words:["mountain landscapes","coastal areas","forest parks","lakes and rivers","desert scenery","natural landmarks"]},
  {id:"type",label:"按类型分类：类型 A / 类型 B / 类型 C",skeleton:"They can be divided into ... The main difference is ...",words:["fall into different groups","one type is","another type is","the main difference is"]}
 ];
 var P3_IDEA_LENSES={
@@ -283,6 +284,7 @@ var P3_IDEA_LENSES={
  company:["规模：大公司和小公司谁有更多资源？","成本：谁能承担技术、培训或环保投入？","影响：谁对行业、员工或消费者影响更大？","灵活性：谁调整得更快，谁受到更多限制？"],
  responsibility:["个人：自己能做什么？","家庭：父母或家人能做什么？","学校：学校或老师能做什么？","政府：政策和公共服务能做什么？"],
  method:["时间：这种方法需要多少时间？","效果：哪种方法反馈更快、效果更稳？","自主：自己学和别人教有什么不同？","结果：哪种方法更适合长期坚持？"],
+ geography:["地貌：山地、湖泊、森林、海岸还是沙漠？","体验：不同地貌能提供什么活动？","人群：更适合哪类游客？","保护：怎样避免旅游破坏自然环境？"],
  type:["特征：每种类型最明显的特征是什么？","例子：生活中分别有哪些例子？","差异：它们最重要的区别是什么？","影响：不同选择会带来什么结果？"]
 };
 var P3_ANGLE_BANK=[
@@ -334,9 +336,10 @@ function p3AngleFits(q){var s=p3Text(q);return P3_ANGLE_BANK.map(function(x){var
 function p3AngleVocab(x,q){if(x.id!=='environment')return x.vocab;var bank=P3_ENV_BANKS.find(function(item){return item.pattern.test(p3Text(q))})||P3_ENV_BANKS[P3_ENV_BANKS.length-1];return bank.vocab}
 function p3AnglesHtml(q){var showSchool=/school|rule|uniform|classroom|student|teacher|homework/.test(p3Text(q)),fits=p3AngleFits(q);return '<div class="p3ExampleHint">只显示与本题相关的角度。先选一个，再想具体例子和词汇。</div>'+fits.map(function(fit,i){var x=fit.x,vocab=p3AngleVocab(x,q);return '<details class="p3Ex"'+(P3MODE==='guided'&&i===0?' open':'')+'><summary>'+esc(x.label)+' · '+fit.status+'</summary><div class="p3ExBody"><b>思考</b> '+esc(x.prompt)+'<div class="p3Words">'+vocab.map(function(w){return '<span class="p3Word">'+esc(w)+'</span>'}).join('')+'</div>'+'<div class="p3English"><b>英式思维</b> '+P3_ENGLISH_THINKING[x.id].map(esc).join(' / ')+'</div>'+(showSchool?'<div class="p3AngleExample">学校题可举例：'+x.school.map(esc).join(' / ')+'</div>':'')+'</div></details>'}).join('')}
 function p3StructureFor(q){var s=p3Text(q);
- if(/^(how can|what can .* do|what should .* do|how .* (solve|deal with|reduce|protect|improve))/.test(s))return "solution";
+ if(/^(how can|what can .* \bdo\b|what should .* \bdo\b|how .* (solve|deal with|reduce|protect|improve))/.test(s))return "solution";
  if(/^(why|what effect|what impact|how does)/.test(s)||/(reason|effect|impact|influence|result|lead to|because|due to)/.test(s))return "cause";
- if(/(is it necessary|is it good|do you think.*(good|bad|necessary|important)|should .*|advantages?|disadvantages?|pros and cons|benefits?|downsides?)/.test(s))return "balance";
+ if(/^(should\b|do you think .* (good|bad|necessary|important)|is it (good|necessary|important)|are .* important|is .* important|advantages?|disadvantages?|pros and cons|benefits?|downsides?)/.test(s))return "balance";
+ if(/^are there (any|many) .*(attraction|place|kind|type|way|thing)/.test(s))return "category";
  if(/(differences?|compare|compared with|which .* (more|better|pay|like|prefer)|young people or old people|doctors or nurses|home or public|countryside or city|rather than|instead of)/.test(s))return "comparison";
  if(/(\bwill\b|future|over time|in the long run|in the next)/.test(s))return "future";
  if(/^(do you think|what do you think|should|is it|are .* important|is .* important|is it good|do you agree)/.test(s))return "opinion";
@@ -348,7 +351,7 @@ function p3ClassificationFor(q,structureId){var s=p3Text(q);
  if(/(future|past|now|change|changed|years|long term|short term|early age|young age|before learning|after learning)/.test(s))return "time";
  if(structureId==="cause")return "cause";
  if(/(company|companies|business|businesses|firm|firms|employer|organization|organisations?|corporation)/.test(s))return "company";
- if(structureId==="solution"||/(taken care of|government|schools|parents should|responsible|responsibility|individuals)/.test(s))return "responsibility";
+ if(/(natural attraction|natural attractions|natural place|geographical|geographic|landscape|natural scenery|scenic spot|tourist attraction)/.test(s))return "geography";
  if(structureId==="future")return "time";
  if(structureId==="comparison"){
   if(/(learning|learn|teacher|study|online|offline|at home|in public|public places|workplace)/.test(s))return "method";
@@ -362,6 +365,15 @@ function p3ClassificationFor(q,structureId){var s=p3Text(q);
   if(/(young|old|children|students|parents|men|women|teachers|doctors|nurses|business)/.test(s))return "group";
   if(/(city|countryside|home|public|street)/.test(s))return "scene";
   return "type";
+ }
+ if(structureId==="solution"){
+  if(/(taken care of|government|schools?|parents|individuals|responsible|responsibility)/.test(s))return "responsibility";
+  return "method";
+ }
+ if(structureId==="opinion"){
+  if(/(men and women|young people and old people|children and adults)/.test(s))return "group";
+  if(/(home|public|city|countryside|online|offline)/.test(s))return "scene";
+  return "balance";
  }
  if(/(men and women|young people and old people|children and adults)/.test(s))return "group";
  if(/(home|public|city|countryside|online|offline)/.test(s))return "scene";
