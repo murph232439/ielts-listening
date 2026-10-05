@@ -83,6 +83,8 @@ footer{text-align:center;color:#b6bcc7;font-size:12px;padding:20px 0 30px}
 .p3ScoreBtn.on{background:#2456a6;border-color:#2456a6;color:#fff;font-weight:700}.p3ScoreTotal{margin-top:8px;color:#2456a6;font-weight:700}
 .p3ModeBar{display:flex;gap:6px;margin:4px 0 10px}.p3ModeBtn{flex:1;padding:7px 0;border-radius:8px;border:1px solid #dfe4ec;background:#fff;font:inherit;font-size:13px;cursor:pointer}
 .p3ModeBtn.on{background:#2456a6;border-color:#2456a6;color:#fff;font-weight:700}
+.p3QuestionCard{margin:8px 0;padding:10px 12px;border-radius:9px;background:#eef3fb;color:#2456a6;line-height:1.5}
+.p3QuestionCard span{display:block;font-size:12px;color:#6f7d92;margin-bottom:2px}
 .p3Select{width:100%;margin-top:4px;padding:8px;border:1px solid #dfe4ec;border-radius:8px;background:#fff;font:inherit}
 .p3ChallengeBox{margin-top:8px;padding:10px 11px;border-radius:9px;background:#fff8e6;color:#7a5615;line-height:1.6}
 .p3Think{margin-top:10px}.p3ThinkRow{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:start;margin-top:7px}
@@ -257,6 +259,7 @@ var P3_STRUCTURES=[
  {id:"comparison",label:"A 群体/做法 → B 群体/做法 → 对比",skeleton:"For one group, ... However, for another group, ... On the whole, ...",words:["whereas","compared with","tend to","on the whole"]},
  {id:"cause",label:"原因 → 结果 → 影响",skeleton:"One main reason is ... As a result, ... This can lead to ...",words:["one main reason is","as a result","lead to","contribute to"]},
  {id:"solution",label:"问题 → 办法 → 效果",skeleton:"The main problem is ... A practical way is ... This would help ...",words:["a practical way is","the government/school can","this would help","deal with"]},
+ {id:"balance",label:"好处 → 坏处 → 条件 → 结论",skeleton:"On the positive side, ... On the negative side, ... It depends on ... So overall, ...",words:["on the positive side","on the negative side","it depends on","on balance"]},
  {id:"future",label:"现状 → 未来变化 → 影响",skeleton:"At the moment, ... In the future, ... One possible effect is ...",words:["at the moment","in the long run","is likely to","one possible effect"]},
  {id:"category",label:"类型 A → 类型 B → 差异/共同点",skeleton:"They can be divided into ... The main difference is ...",words:["fall into different groups","for one group","for another","the main difference is"]}
 ];
@@ -316,12 +319,14 @@ var P3STATE={structure:"",classification:""},P3REC={recorder:null,stream:null,ch
 function p3Text(q){return String(q||"").toLowerCase()}
 function p3Find(list,id){for(var i=0;i<list.length;i++){if(list[i].id===id)return list[i]}return list[0]}
 function p3AnswerFor(q){return P3_ANSWERS[String(q||"").replace(/\s+/g," ").trim().toLowerCase()]}
+function p3QuestionHtml(){return '<div class="p3QuestionCard"><span>当前题目</span>'+esc(PCUR.t)+'</div>'}
 function p3IdeaHtml(id,q){var items=P3_IDEA_LENSES[id]||P3_IDEA_LENSES.type,html='<div class="p3IdeaList">'+items.map(function(x){return '<span class="p3Idea">'+esc(x)+'</span>'}).join('')+'</div>';if(id==='group'&&/young|old/.test(p3Text(q)))html+='<div class="p3IdeaEx">年龄差示例：young people 可以想 energy、fitness trends、appearance、peer influence；older people 可以想 age-related risks、regular check-ups、long-term health。</div>';return html}
 function p3AngleFits(q){var s=p3Text(q);return P3_ANGLE_BANK.map(function(x){var hits=s.match(P3_ANGLE_RULES[x.id])||[];return {x:x,score:hits.length,status:'推荐角度'}}).filter(function(x){return x.score>0}).sort(function(a,b){return b.score-a.score}).slice(0,4)}
 function p3AnglesHtml(q){var showSchool=/school|rule|uniform|classroom|student|teacher|homework/.test(p3Text(q)),fits=p3AngleFits(q);return '<div class="p3ExampleHint">只显示与本题相关的角度。先选一个，再想具体例子和词汇。</div>'+fits.map(function(fit,i){var x=fit.x;return '<details class="p3Ex"'+(P3MODE==='guided'&&i===0?' open':'')+'><summary>'+esc(x.label)+' · '+fit.status+'</summary><div class="p3ExBody"><b>思考</b> '+esc(x.prompt)+'<div class="p3Words">'+x.vocab.map(function(w){return '<span class="p3Word">'+esc(w)+'</span>'}).join('')+'</div>'+'<div class="p3English"><b>英式思维</b> '+P3_ENGLISH_THINKING[x.id].map(esc).join(' / ')+'</div>'+(showSchool?'<div class="p3AngleExample">学校题可举例：'+x.school.map(esc).join(' / ')+'</div>':'')+'</div></details>'}).join('')}
 function p3StructureFor(q){var s=p3Text(q);
  if(/^(how can|what can .* do|what should .* do|how .* (solve|deal with|reduce|protect|improve))/.test(s))return "solution";
  if(/^(why|what effect|what impact|how does)/.test(s)||/(reason|effect|impact|influence|result|lead to|because|due to)/.test(s))return "cause";
+ if(/(is it necessary|is it good|do you think.*(good|bad|necessary|important)|should .*|advantages?|disadvantages?|pros and cons|benefits?|downsides?)/.test(s))return "balance";
  if(/(differences?|compare|compared with|which .* (more|better|pay|like|prefer)|young people or old people|doctors or nurses|home or public|countryside or city|rather than|instead of)/.test(s))return "comparison";
  if(/(\bwill\b|future|over time|in the long run|in the next)/.test(s))return "future";
  if(/^(do you think|what do you think|should|is it|are .* important|is .* important|is it good|do you agree)/.test(s))return "opinion";
@@ -329,6 +334,7 @@ function p3StructureFor(q){var s=p3Text(q);
  return "opinion";
 }
 function p3ClassificationFor(q,structureId){var s=p3Text(q);
+ if(structureId==="balance")return "balance";
  if(/(future|past|now|change|changed|years|long term|short term|early age|young age|before learning|after learning)/.test(s))return "time";
  if(structureId==="cause")return "cause";
  if(/(company|companies|business|businesses|firm|firms|employer|organization|organisations?|corporation)/.test(s))return "company";
@@ -365,7 +371,7 @@ function p3ScoreHtml(){return '<div class="p3Score"><div class="trainStep" style
 function renderP3Step(){
   var box=document.getElementById('trainBox');if(!box)return;
   P3STATE={structure:p3StructureFor(PCUR.t),classification:""};P3SCORES={structure:0,logic:0,lexis:0,grammar:0,pron:0};
-  box.innerHTML=p3ModeBar()+'<div id="p3modeBody"></div>';p3RenderModeBody();
+  box.innerHTML=p3QuestionHtml()+p3ModeBar()+'<div id="p3modeBody"></div>';p3RenderModeBody();
 }
 function p3SetMode(mode){P3MODE=mode;p3ResetRecording();renderP3Step()}
 function p3RenderModeBody(){
@@ -394,6 +400,7 @@ function p3SemiStart(){P3STATE.structure=document.getElementById('p3SemiStructur
 function p3RenderToolkit(){
   var st=p3Find(P3_STRUCTURES,P3STATE.structure),cl=p3Find(P3_CLASSIFICATIONS,P3STATE.classification),words=st.words.concat(cl.words).filter(function(x,i,a){return a.indexOf(x)===i}),ans=p3AnswerFor(PCUR.t);
   var thinking='<div class="p3Think"><div class="trainStep" style="margin-top:12px">固定四步：A 答 → B 分 → C 因 → D 果</div>'
+    +p3QuestionHtml()
     +'<div class="p3Kit"><b>内容镜头</b>'+p3IdeaHtml(cl.id,PCUR.t)+'</div>'
     +'<div class="p3Kit"><b>八角度思考卡</b>'+p3AnglesHtml(PCUR.t)+'</div>'
     +'<div class="p3ThinkRow"><label>A 直接回答</label><textarea class="p3ThinkInput" id="p3think1" placeholder="I think / The main point is..."></textarea></div>'
