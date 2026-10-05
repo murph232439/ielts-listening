@@ -271,6 +271,7 @@ var P3_STRUCTURES=[
 ];
 var P3_CLASSIFICATIONS=[
  {id:"context",label:"按居住环境/人群对比分类：自然地区居民 / 城市居民",skeleton:"People who live close to nature ... People in cities ...",words:["people who live close to nature","urban residents","more likely to...","daily contact with nature","environmental awareness"]},
+ {id:"age",label:"按年龄与已有经验分类：儿童 / 年轻人 / 老年人",skeleton:"For children, ... For younger adults, ... For older people, ...",words:["new knowledge","personal experience","relevant to their own lives","have lived through recent history","need a broader overview","learn chronologically"]},
  {id:"stage",label:"按学习时机/深度分类：早期启蒙 / 学龄学习 / 青少年深化",skeleton:"At an early age, ... As children grow older, ...",words:["early exposure","age-appropriate content","build curiosity","start with simple stories","develop critical thinking","move to deeper analysis"]},
  {id:"group",label:"按人群分类：年轻人 / 老年人 / 学生 / 上班族",skeleton:"For younger people, ... However, for older people, ...",words:["younger/older people","whereas","tend to","health-conscious"]},
  {id:"scene",label:"按场景或方式分类：城市 / 乡村、线上 / 线下、家 / 公共场所",skeleton:"In cities, ... In the countryside, ...",words:["in cities","in the countryside","online","in public places"]},
@@ -285,6 +286,7 @@ var P3_CLASSIFICATIONS=[
 ];
 var P3_IDEA_LENSES={
  context:["人群：谁住在自然环境中，谁住在城市？","关系：他们与自然的日常接触有什么不同？","利益：谁更直接依赖当地资源？","态度：谁更可能有保护意愿，为什么？"],
+ age:["已有知识：这个年龄的人已经接触过什么？","关联经验：哪一段历史更贴近他们的生活经历？","理解难度：抽象背景和现实经验哪一个更重要？","结论：不同年龄的人是否需要不同的学习顺序？"],
  stage:["早期开始：它能建立什么兴趣、习惯或基础？","年龄适配：什么内容适合幼童，什么内容不适合？","后续深化：长大以后怎样转向原因、背景和分析？","结论：应该早开始，但内容和难度要不要随年龄调整？"],
  group:["需求：他们最在意什么？","条件：谁有更多时间、金钱、经验或资源？","习惯：两组长久以来的做法有什么不同？","压力：谁受到同伴、家庭或社会期待影响更大？"],
  scene:["条件：哪种场景更方便、更便宜或更安全？","习惯：人们在两种场景中的做法有什么不同？","关系：哪种场景更容易产生交流或冲突？","结果：长期来看，哪种场景更有利？"],
@@ -344,6 +346,7 @@ function p3GrammarFor(q){return P3_GRAMMAR[String(q||"").replace(/\s+/g," ").tri
 function p3QuestionHtml(){return '<div class="p3QuestionCard"><span>当前题目</span>'+esc(PCUR.t)+'</div>'}
 function p3GrammarText(q){var g=p3GrammarFor(q)||{};return [].concat(g.subjects||[],g.objects||[],g.verbs||[],g.adjectives||[],g.adverbs||[],g.prepositions||[]).join(' ').toLowerCase()}
 function p3ClassificationAdviceHtml(q){var id=p3ClassificationFor(q,p3StructureFor(q)),g=p3GrammarFor(q)||{},subject=(g.subjects||[])[0]||'',object=(g.objects||[])[0]||'';var text={
+ age:'题目不是要求所有人遵循同一个学习顺序，而是要看年龄和已有经验：儿童面对的都是新知识，年轻人可能更容易理解现代史，老年人已经经历过现代史，可能需要更系统地了解古代史。',
  stage:'题目问的是是否应该很早开始学，重点比较早期启蒙和后续深化，不要把成年人当作主要分类对象。',
  context:'题目比较的是住在自然环境中的人和城市居民，并用 more likely 比较保护意愿，先按居住环境或人群对比分类。',
  geography:'题目问的是自然景点的类型，核心对象是自然景点，先按地理特征分类。',
@@ -375,6 +378,7 @@ function p3StructureFor(q){var s=p3Text(q);
 function p3ClassificationFor(q,structureId){var s=p3Text(q);
  if(structureId==="balance")return "balance";
  if(/people.*live.*natural|natural place/.test(p3GrammarText(q))&&/more|likely/.test(p3GrammarText(q)))return "context";
+ if(/(ancient history.*modern history|modern history.*ancient history)/.test(s))return "age";
  if(/(early age|young age|at a young age|when they are older|children should begin|begin learning.*early|as they grow up)/.test(s))return "stage";
  if(/(future|past|now|change|changed|years|long term|short term|early age|young age|before learning|after learning)/.test(s))return "time";
  if(structureId==="cause")return "cause";
