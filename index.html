@@ -293,7 +293,7 @@ var P3_ANGLE_BANK=[
  {id:"economy",label:"Economy 金钱",prompt:"谁花钱、省钱或获得经济好处？",vocab:["save money","reduce costs","be affordable","use resources efficiently","create job opportunities","offer good value"],school:["校服费用","学校资源","可负担的餐食"]},
  {id:"relax",label:"Relax 娱乐",prompt:"它怎样帮助人放松、娱乐或恢复精力？",vocab:["relax and unwind","enjoy free time","reduce pressure","do something fun","take a break","recharge energy"],school:["课间休息","社团活动","体育比赛"]},
  {id:"sentimental",label:"Sentimental 情感",prompt:"它带来什么感受、关系或归属感？",vocab:["feel safe and supported","create a sense of belonging","build trust","reduce loneliness","strengthen relationships","feel more confident"],school:["校园安全感","同学友谊","公平对待"]},
- {id:"environment",label:"Environment 环境",prompt:"它对自然环境、公共空间或资源使用有什么影响？",vocab:["reduce waste","save energy","protect natural resources","recycle materials","keep public spaces clean","reduce pollution"],school:["回收垃圾","节约用纸","保持校园清洁"]}
+ {id:"environment",label:"Environment 环境",prompt:"它对自然环境、公共空间或资源使用有什么影响？",vocab:["reduce waste","save energy","protect natural resources","recycle materials","keep public spaces clean","reduce pollution"],school:["回收垃圾","节约用纸","保持校园清洁"]},
 ];
 var P3_ENGLISH_THINKING={
  communication:["谁和谁交流？","交流之后关系或理解发生了什么变化？","这个变化为什么重要？"],
@@ -315,6 +315,14 @@ var P3_ANGLE_RULES={
  sentimental:/friend|family|parent|child|relationship|lonely|happy|feel|support|belong|love|emotion|popular/g,
  environment:/environment|nature|natural|city|countryside|rubbish|recycl|plastic|pollution|energy|transport|animal|garden|park|river|lake|water|green|building/g
 };
+var P3_ENV_BANKS=[
+ {pattern:/natural spaces?|natural place|green space|parks?|city/,vocab:["create more green spaces","improve air quality","reduce the urban heat island effect","provide habitats for wildlife","promote residents' mental well-being","balance urban development with conservation","make cities more sustainable"]},
+ {pattern:/company|companies|business|industry|factory|factories/,vocab:["adopt sustainable packaging","use energy-efficient production methods","reduce industrial waste","comply with environmental regulations","invest in green technology","take corporate responsibility for pollution"]},
+ {pattern:/river|lake|water/,vocab:["protect water quality","preserve aquatic ecosystems","prevent industrial water pollution","support local biodiversity","use water resources sustainably","manage flooding and irrigation"]},
+ {pattern:/animal|wildlife|species|natural/,vocab:["protect wildlife habitats","maintain biodiversity","prevent animals from losing their natural habitat","balance tourism with conservation","promote sustainable tourism","protect endangered species"]},
+ {pattern:/countryside|urban|city|transport/,vocab:["control urban expansion","protect green belts","reduce traffic-related pollution","preserve the natural landscape","develop public transport","create eco-friendly neighbourhoods"]},
+ {pattern:/.*/,vocab:["reduce carbon emissions","cut down on single-use plastics","conserve natural resources","switch to renewable energy","improve waste management","raise environmental awareness"]}
+];
 var P3STATE={structure:"",classification:""},P3REC={recorder:null,stream:null,chunks:[],url:""},P3SCORES={structure:0,logic:0,lexis:0,grammar:0,pron:0};
 function p3Text(q){return String(q||"").toLowerCase()}
 function p3Find(list,id){for(var i=0;i<list.length;i++){if(list[i].id===id)return list[i]}return list[0]}
@@ -322,7 +330,8 @@ function p3AnswerFor(q){return P3_ANSWERS[String(q||"").replace(/\s+/g," ").trim
 function p3QuestionHtml(){return '<div class="p3QuestionCard"><span>当前题目</span>'+esc(PCUR.t)+'</div>'}
 function p3IdeaHtml(id,q){var items=P3_IDEA_LENSES[id]||P3_IDEA_LENSES.type,html='<div class="p3IdeaList">'+items.map(function(x){return '<span class="p3Idea">'+esc(x)+'</span>'}).join('')+'</div>';if(id==='group'&&/young|old/.test(p3Text(q)))html+='<div class="p3IdeaEx">年龄差示例：young people 可以想 energy、fitness trends、appearance、peer influence；older people 可以想 age-related risks、regular check-ups、long-term health。</div>';return html}
 function p3AngleFits(q){var s=p3Text(q);return P3_ANGLE_BANK.map(function(x){var hits=s.match(P3_ANGLE_RULES[x.id])||[];return {x:x,score:hits.length,status:'推荐角度'}}).filter(function(x){return x.score>0}).sort(function(a,b){return b.score-a.score}).slice(0,4)}
-function p3AnglesHtml(q){var showSchool=/school|rule|uniform|classroom|student|teacher|homework/.test(p3Text(q)),fits=p3AngleFits(q);return '<div class="p3ExampleHint">只显示与本题相关的角度。先选一个，再想具体例子和词汇。</div>'+fits.map(function(fit,i){var x=fit.x;return '<details class="p3Ex"'+(P3MODE==='guided'&&i===0?' open':'')+'><summary>'+esc(x.label)+' · '+fit.status+'</summary><div class="p3ExBody"><b>思考</b> '+esc(x.prompt)+'<div class="p3Words">'+x.vocab.map(function(w){return '<span class="p3Word">'+esc(w)+'</span>'}).join('')+'</div>'+'<div class="p3English"><b>英式思维</b> '+P3_ENGLISH_THINKING[x.id].map(esc).join(' / ')+'</div>'+(showSchool?'<div class="p3AngleExample">学校题可举例：'+x.school.map(esc).join(' / ')+'</div>':'')+'</div></details>'}).join('')}
+function p3AngleVocab(x,q){if(x.id!=='environment')return x.vocab;var bank=P3_ENV_BANKS.find(function(item){return item.pattern.test(p3Text(q))})||P3_ENV_BANKS[P3_ENV_BANKS.length-1];return bank.vocab}
+function p3AnglesHtml(q){var showSchool=/school|rule|uniform|classroom|student|teacher|homework/.test(p3Text(q)),fits=p3AngleFits(q);return '<div class="p3ExampleHint">只显示与本题相关的角度。先选一个，再想具体例子和词汇。</div>'+fits.map(function(fit,i){var x=fit.x,vocab=p3AngleVocab(x,q);return '<details class="p3Ex"'+(P3MODE==='guided'&&i===0?' open':'')+'><summary>'+esc(x.label)+' · '+fit.status+'</summary><div class="p3ExBody"><b>思考</b> '+esc(x.prompt)+'<div class="p3Words">'+vocab.map(function(w){return '<span class="p3Word">'+esc(w)+'</span>'}).join('')+'</div>'+'<div class="p3English"><b>英式思维</b> '+P3_ENGLISH_THINKING[x.id].map(esc).join(' / ')+'</div>'+(showSchool?'<div class="p3AngleExample">学校题可举例：'+x.school.map(esc).join(' / ')+'</div>':'')+'</div></details>'}).join('')}
 function p3StructureFor(q){var s=p3Text(q);
  if(/^(how can|what can .* do|what should .* do|how .* (solve|deal with|reduce|protect|improve))/.test(s))return "solution";
  if(/^(why|what effect|what impact|how does)/.test(s)||/(reason|effect|impact|influence|result|lead to|because|due to)/.test(s))return "cause";
