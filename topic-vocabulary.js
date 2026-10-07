@@ -723,7 +723,7 @@ building|economy|be expensive to build|建造费用高|Very tall buildings can b
   p3RenderToolkit = function () {
     toolkit();
     document.querySelectorAll('#p3toolkit .p3Ex .p3Words').forEach(function (el) { el.remove(); });
-    document.querySelectorAll('#p3toolkit .p3Kit > b').forEach(function (el) { if (el.textContent === '可用词伙') el.textContent = '连接和分类表达'; });
+    document.querySelectorAll('#p3toolkit .p3Kit > b').forEach(function (el) { if (el.textContent === '可用词伙') el.textContent = '连接和分类表达'; if (el.textContent === '八角度思考卡') el.textContent = 'CHEERS / 人物角度'; });
   };
   // Expose the authored content for coverage checks and future maintenance.
   window.IELTSTopicVocabulary = {banks:banks, topicMap:topicMap, angles:angles, entriesFor:entriesFor};
