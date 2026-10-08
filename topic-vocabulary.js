@@ -725,6 +725,8 @@ building|economy|be expensive to build|建造费用高|Very tall buildings can b
   style.textContent += '.vocabTerms{padding-bottom:14px;border-bottom:1px solid #cfdbed}.vocabTerms h3,.vocabLevel h3{font-size:15px;margin:12px 0 8px;color:#2456a6}.vocabTerms h3 span,.vocabLevel h3 span{font-size:12px;font-weight:400;color:#68788e}.vocabLevels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}.vocabLevel{min-width:0;border:1px solid #d7e1ee;border-radius:10px;padding:0 10px 10px;background:#edf3fb}.vocabLevel[data-level=B2]{background:#edf8f3}.vocabLevel[data-level=C1]{background:#f4effb}.vocabLevel .b1Grid{grid-template-columns:minmax(0,1fr)}.b1Entry{overflow-wrap:anywhere}@media(max-width:780px){.vocabLevels{grid-template-columns:minmax(0,1fr)}}';
   document.head.appendChild(style);
   style.textContent += '.b1Angle{margin:14px 0}.b1Angle h4{font-size:13px;margin:0 0 4px;color:#344b70}';
+  window.IELTSTopicVocabulary = {banks:banks, topicMap:topicMap, angles:angles, entriesFor:entriesFor, renderHtml:html};
+  if (typeof window.IELTSVocabularyPage === 'function') { window.IELTSVocabularyPage(); return; }
   // Replace extracted fragments; leave the original question bank and answer models intact.
   var browse = renderBrowse;
   renderBrowse = function () {
@@ -754,6 +756,6 @@ building|economy|be expensive to build|建造费用高|Very tall buildings can b
     document.querySelectorAll('#p3toolkit .p3Kit > b').forEach(function (el) { if (el.textContent === '可用词伙') el.textContent = '连接和分类表达'; if (el.textContent === '八角度思考卡') el.textContent = 'CHEERS / 人物角度'; });
   };
   // Expose the authored content for coverage checks and future maintenance.
-  window.IELTSTopicVocabulary = {banks:banks, topicMap:topicMap, angles:angles, entriesFor:entriesFor};
+  window.IELTSTopicVocabulary = {banks:banks, topicMap:topicMap, angles:angles, entriesFor:entriesFor, renderHtml:html};
   if (MODE === 'browse') renderBrowse(); else if (PG && PCUR) showPracticeBank();
 })();
