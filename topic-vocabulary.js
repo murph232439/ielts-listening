@@ -1,3 +1,16 @@
+/* Load the per-question materials independently of the audio-rich HTML. */
+if (Array.isArray(window.G) && !window.IELTSQuestionMaterialsScript) {
+  window.IELTSQuestionMaterialsScript = true;
+  var questionMaterialScript = document.createElement('script');
+  questionMaterialScript.src = 'question-materials.js?v=20261009a';
+  questionMaterialScript.onerror = function () {
+    var message = document.createElement('p');
+    message.setAttribute('role', 'status');
+    message.textContent = '逐题素材暂时未能加载，请刷新重试。';
+    document.getElementById('list').prepend(message);
+  };
+  document.head.appendChild(questionMaterialScript);
+}
 /* Authored speaking chunks for learners around B1; examples are adaptable, not model answers. */
 (function initialiseVocabulary() {
   'use strict';
