@@ -697,13 +697,15 @@ function submitSpeakingRecord(){
   if(!SPEAK_REC.blob||SPEAK_REC.submitting)return;
   var s=speakingScores(),comments=speakingComments(s),title=speakingQuestionTitle(),part=PG&&PG.part?PG.part.toUpperCase():'P';
   var sampleHtml=getSampleAnswerHtml();
+  var mime=SPEAK_REC.recorder&&SPEAK_REC.recorder.mimeType?SPEAK_REC.recorder.mimeType:'audio/webm';
+  var ext=mime.indexOf('mp4')>=0?'m4a':mime.indexOf('ogg')>=0?'ogg':'webm';
   SPEAK_REC.submitting=true;var b=document.getElementById('srecsubmit');b.disabled=true;b.textContent='提交中…';document.getElementById('srecstatus').textContent='正在转写、评分并发送到老师邮箱…';
   var fd=new FormData();
   fd.append('_subject','雅思口语录音 · '+part+' · '+title);
   fd.append('_template','table');fd.append('_captcha','false');
   fd.append('口语部分',part);fd.append('话题',PG&&PG.title?PG.title:'');fd.append('题目',PCUR&&PCUR.t?PCUR.t:'');fd.append('转写结果',speakingTranscript()||'自动转写不可用，请老师收听音频');
   fd.append('流利度',String(s.fluency));fd.append('扣题程度',String(s.relevance));fd.append('词汇',String(s.vocabulary));fd.append('语法',String(s.grammar));fd.append('综合估算',String(s.overall));fd.append('简易评语',comments.join('\n'));
-  fd.append('audio',SPEAK_REC.blob,part.toLowerCase()+'-speaking.webm');
+  fd.append('attachment',SPEAK_REC.blob,part.toLowerCase()+'-speaking.'+ext);
   fetch(SPEAK_EMAIL,{method:'POST',body:fd,headers:{Accept:'application/json'}}).then(function(r){return r.json()}).then(function(data){
     SPEAK_REC.submitting=false;b.textContent='提交并评分';
     if(data&&(data.success==='true'||data.success===true)){
