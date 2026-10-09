@@ -765,14 +765,17 @@ building|economy|be expensive to build|建造费用高|Very tall buildings can b
     var box = document.getElementById('trainBox'); if (!box || !PG) return;
     box.querySelectorAll('.b1Vocab, .trainVocab').forEach(function (el) { el.remove(); });
     var title = PCUR && topicMap[PCUR.t] ? PCUR.t : PG.title;
-    box.insertAdjacentHTML('afterbegin', html(title, true));
+    var material = box.querySelector('.qmMaterial');
+    var bank = html(title, PG.part !== 'p3');
+    if (material) material.insertAdjacentHTML('afterend', bank);
+    else box.insertAdjacentHTML('afterbegin', bank);
   }
   var train = renderTrainStep;
   renderTrainStep = function () { train(); showPracticeBank(); };
   var step = renderP3Step;
   renderP3Step = function () { step(); showPracticeBank(); };
   var toolkit = p3RenderToolkit;
-  p3AnglesHtml = function () { return '<div class="p3ExampleHint">可用上方词库里的 CHEERS / 人物角度展开原因：选一个贴近题目的角度，再补一个具体例子。</div>'; };
+  p3AnglesHtml = function () { return '<div class="p3ExampleHint">先查看这道问题的扣题素材，选择贴合问题的理由和例子；需要更多表达时再展开话题词库，用 CHEERS / 人物角度补充。</div>'; };
   p3RenderToolkit = function () {
     toolkit();
     document.querySelectorAll('#p3toolkit .p3Ex .p3Words').forEach(function (el) { el.remove(); });
