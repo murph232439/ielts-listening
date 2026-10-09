@@ -124,6 +124,10 @@ footer{text-align:center;color:#b6bcc7;font-size:12px;padding:20px 0 30px}
 .recOverall{margin-top:8px;text-align:center;font-weight:800;color:#2456a6}
 .recComments{margin-top:10px;color:#465069;line-height:1.65}
 .recTranscript{margin-top:10px;padding:9px 10px;border-radius:8px;background:#f7f9fc;color:#445;white-space:pre-wrap;line-height:1.65}
+.recSample{margin-top:12px;padding:10px 11px;border-radius:9px;background:#fff8e6;border:1px solid #f0d59b;color:#7a5615;line-height:1.7}
+.speakingOverlay{position:absolute;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;padding:24px;background:#fff;text-align:center}
+.speakingOverlayInner{max-width:620px}.speakingOverlay h3{margin:0 0 10px;color:#2456a6;font-size:20px}.speakingOverlay p{margin:8px 0;color:#667;line-height:1.7}.speakingOverlay .recPulse{display:inline-block;width:18px;height:18px;margin-bottom:10px;border-radius:50%;background:#b83b3b;animation:recPulse 1s infinite}
+@keyframes recPulse{0%{box-shadow:0 0 0 0 rgba(184,59,59,.45)}70%{box-shadow:0 0 0 15px rgba(184,59,59,0)}100%{box-shadow:0 0 0 0 rgba(184,59,59,0)}}
 </style></head><body>
 <header>
 <h1>雅思口语题库 · 听音练习</h1>
@@ -607,7 +611,26 @@ function recordingStepHtml(q){
     +'<div class="recStatus" id="srecstatus">录音会同时尝试自动转写。Chrome / Edge 支持完整转写；其他浏览器会提交音频但不保证转写。</div>'
     +'<div class="recLive" id="sreclive">转写内容将显示在这里</div><div id="srecresult"></div></div>';
 }
-function showRecordingStep(){var el=document.getElementById('recStep');if(el)el.classList.add('on')}
+function showRecordingStep(){var el=document.getElementById('recStep');if(el)el.classList.add('on');hideReferenceForRecording()}
+function hideReferenceForRecording(){
+  document.querySelectorAll('.trainModel').forEach(function(x){x.classList.remove('on')});
+  document.querySelectorAll('.p3Ref').forEach(function(x){x.style.display='none'});
+  var ref=document.getElementById('p3showref');if(ref)ref.textContent='显示参考思路';
+}
+function speakingOverlayHtml(){
+  var q=speakingQuestionTitle(),hint=PG&&PG.part==='p2'?'请按题卡完整表达，不要看示范答案。':'先直接回答问题，再用原因和例子展开。不要看示范答案。';
+  return '<div class="speakingOverlay" id="speakingOverlay"><div class="speakingOverlayInner"><span class="recPulse"></span><h3>正在录音</h3><div class="recQuestion">'+esc(q)+'</div><p>'+esc(hint)+'</p></div></div>';
+}
+function showSpeakingOverlay(){
+  hideSpeakingOverlay();
+  var card=document.querySelector('.card');if(!card)return;
+  card.style.position='relative';card.insertAdjacentHTML('beforeend',speakingOverlayHtml());
+}
+function hideSpeakingOverlay(){var x=document.getElementById('speakingOverlay');if(x)x.remove()}
+function getSampleAnswerHtml(){
+  var sample=document.getElementById('compactModel')||document.querySelector('.trainModel')||document.getElementById('p3reference');
+  return sample?sample.innerHTML.trim():'';
+}
 function speakingTranscript(){
   return SPEAK_REC.parts.concat(SPEAK_REC.interim?[SPEAK_REC.interim]:[]).join(' ').replace(/\s+/g,' ').trim();
 }
@@ -633,6 +656,7 @@ function startSpeakingRecord(){
     SPEAK_REC.recorder.ondataavailable=function(e){if(e.data&&e.data.size)SPEAK_REC.chunks.push(e.data)};
     SPEAK_REC.recorder.onstop=function(){SPEAK_REC.stoppedAt=Date.now();SPEAK_REC.blob=new Blob(SPEAK_REC.chunks,{type:SPEAK_REC.recorder.mimeType||'audio/webm'});if(SPEAK_REC.url)URL.revokeObjectURL(SPEAK_REC.url);SPEAK_REC.url=URL.createObjectURL(SPEAK_REC.blob);document.getElementById('srecplay').disabled=false;document.getElementById('srecsubmit').disabled=false;document.getElementById('srecstart').disabled=false;document.getElementById('srecstop').disabled=true;var st=document.getElementById('srecstatus');if(st)st.textContent='录音完成 · 可以回听并提交。';updateSpeakingLive();if(SPEAK_REC.stream)SPEAK_REC.stream.getTracks().forEach(function(t){t.stop()})};
     SPEAK_REC.recorder.start(250);document.getElementById('srecstart').disabled=true;document.getElementById('srecstop').disabled=false;document.getElementById('srecplay').disabled=true;document.getElementById('srecsubmit').disabled=true;document.getElementById('srecstatus').textContent='录音中 · 请完整回答本题';startSpeechLoop();
+    hideReferenceForRecording();showSpeakingOverlay();
   }).catch(function(){document.getElementById('srecstatus').textContent='麦克风不可用或权限被拒绝。'});
 }
 function stopSpeakingRecord(){
@@ -672,6 +696,7 @@ function speakingComments(s){
 function submitSpeakingRecord(){
   if(!SPEAK_REC.blob||SPEAK_REC.submitting)return;
   var s=speakingScores(),comments=speakingComments(s),title=speakingQuestionTitle(),part=PG&&PG.part?PG.part.toUpperCase():'P';
+  var sampleHtml=getSampleAnswerHtml();
   SPEAK_REC.submitting=true;var b=document.getElementById('srecsubmit');b.disabled=true;b.textContent='提交中…';document.getElementById('srecstatus').textContent='正在转写、评分并发送到老师邮箱…';
   var fd=new FormData();
   fd.append('_subject','雅思口语录音 · '+part+' · '+title);
@@ -683,10 +708,12 @@ function submitSpeakingRecord(){
     SPEAK_REC.submitting=false;b.textContent='提交并评分';
     if(data&&(data.success==='true'||data.success===true)){
       document.getElementById('srecstatus').textContent='已发送到 wuxi2@xdf.cn';
+      hideSpeakingOverlay();
       document.getElementById('srecresult').innerHTML='<div class="recCongrat"><h2>Congratulations！你完成了——'+esc(title)+'</h2><p>录音和转写已提交，老师邮箱已收到。</p></div>'
         +'<div class="recScores"><div class="recScore"><b>'+s.fluency+'</b><span>流利度</span></div><div class="recScore"><b>'+s.relevance+'</b><span>扣题程度</span></div><div class="recScore"><b>'+s.vocabulary+'</b><span>词汇</span></div><div class="recScore"><b>'+s.grammar+'</b><span>语法</span></div></div>'
         +'<div class="recOverall">综合估算 '+s.overall+'（非官方评分）</div><div class="recComments">'+comments.map(function(x){return '<div>• '+esc(x)+'</div>'}).join('')+'</div>'
-        +'<div class="recTranscript"><b>转写：</b><br>'+esc(speakingTranscript()||'未识别到文字')+'</div>';
+        +'<div class="recTranscript"><b>转写：</b><br>'+esc(speakingTranscript()||'未识别到文字')+'</div>'
+        +(sampleHtml?'<div class="recSample"><b>示范答案</b>'+sampleHtml+'</div>':'');
     }else{
       document.getElementById('srecstatus').textContent='提交失败：请确认邮箱服务已激活，或稍后重试。';
     }
