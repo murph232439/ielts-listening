@@ -699,6 +699,15 @@ building|economy|be expensive to build|建造费用高|Very tall buildings can b
     'Your favorite city that you have visited':'city',
     'A tall building in your city you like or dislike':'building'
   };
+  if (window.IELTSTextbookVocabulary2027) {
+    var textbook2027 = window.IELTSTextbookVocabulary2027;
+    Object.keys(textbook2027.banks || {}).forEach(function (key) {
+      banks[key] = (banks[key] || []).concat(textbook2027.banks[key]);
+    });
+    Object.assign(topicMap, textbook2027.topicMap || {});
+    Object.assign(topicMap, textbook2027.questionMap || {});
+    window.IELTSTextbookQuestionMap2027 = textbook2027.questionMap || {};
+  }
   function entriesFor(title, level) {
     var keys = (topicMap[title] || (banks[title] ? title : '')).split(','), out = [];
     keys.forEach(function (key) {
@@ -742,7 +751,8 @@ building|economy|be expensive to build|建造费用高|Very tall buildings can b
   function showPracticeBank() {
     var box = document.getElementById('trainBox'); if (!box || !PG) return;
     box.querySelectorAll('.b1Vocab, .trainVocab').forEach(function (el) { el.remove(); });
-    box.insertAdjacentHTML('afterbegin', html(PG.title, true));
+    var title = PCUR && topicMap[PCUR.t] ? PCUR.t : PG.title;
+    box.insertAdjacentHTML('afterbegin', html(title, true));
   }
   var train = renderTrainStep;
   renderTrainStep = function () { train(); showPracticeBank(); };
