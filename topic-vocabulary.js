@@ -1,8 +1,14 @@
 /* Load the per-question materials independently of the audio-rich HTML. */
 if (Array.isArray(window.G) && !window.IELTSQuestionMaterialsScript) {
   window.IELTSQuestionMaterialsScript = true;
+  var materialLink = document.createElement('a');
+  materialLink.href = 'materials.html';
+  materialLink.textContent = '逐题扣题素材 · Part 2 / Part 3';
+  materialLink.style.cssText = 'display:block;margin:10px 0;color:#2456a6;font-size:13px';
+  var materialHeading = document.querySelector('h1');
+  if (materialHeading) materialHeading.insertAdjacentElement('afterend', materialLink);
   var questionMaterialScript = document.createElement('script');
-  questionMaterialScript.src = 'question-materials.js?v=20261009a';
+  questionMaterialScript.src = 'question-materials.js?v=20261009b';
   questionMaterialScript.onerror = function () {
     var message = document.createElement('p');
     message.setAttribute('role', 'status');
